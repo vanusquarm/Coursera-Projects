@@ -80,3 +80,57 @@ This hybrid approach improves performance by reducing the number of database que
 - **Database** (e.g., SQL Server, MySQL) is optimized for durability, strong consistency, and complex queries and is suitable for long-term data storage, transactional integrity, and complex relational data management.
 
 While both involve accessing data over a network, caches are optimized for speed and simplicity, whereas databases are optimized for consistency, durability, and complex querying capabilities. A distributed cache does not inherently require HTTP access, though it may be accessed via HTTP when used as part of a web application, and the latency of both depends on the underlying infrastructure, but cache access will generally be faster than database access due to its in-memory nature.
+
+### Bonus: Caching In Dotnet Core
+Both `AddMemoryCache` and `AddDistributedMemoryCache` are used for in-memory caching in ASP.NET Core, but they serve different purposes:
+
+---
+
+### 🔁 `AddMemoryCache`
+
+This is used for **in-memory, process-local caching** — meaning the data is cached only in the memory of the current application instance.
+
+#### ✅ Advantages:
+
+* Very fast (pure in-memory access).
+* Simple to set up and use.
+* Ideal for caching data like lookup tables, configuration values, etc.
+
+#### ❌ Limitations:
+
+* Not suitable for multi-server environments (data isn't shared across servers).
+* Cache is lost when the application restarts.
+* Not designed for use with session state.
+
+---
+
+### 💾 `AddDistributedMemoryCache`
+
+This is the **in-memory implementation of the IDistributedCache** interface — often used as a placeholder or for development/testing. It stores data in memory like `AddMemoryCache`, but behind a **distributed cache abstraction**.
+
+#### ✅ Advantages:
+
+* Implements `IDistributedCache`, so you can swap it later with Redis, SQL Server, or other distributed providers without changing your code.
+* Required for **session state support** (`AddSession()` relies on `IDistributedCache`).
+* Prepares your app for scaling across multiple servers.
+
+#### ❌ Limitations:
+
+* Still not actually distributed — it’s process-local and in-memory.
+* Slightly more overhead than `MemoryCache` due to serialization.
+
+---
+
+### 🟨 Summary: When to Use What?
+
+| Use Case                              | Use `AddMemoryCache` | Use `AddDistributedMemoryCache`                |
+| ------------------------------------- | -------------------- | ---------------------------------------------- |
+| Caching config, lookups               | ✅                    | 🚫                                             |
+| Web farm / load-balanced env          | 🚫                   | ✅ (but with real distributed cache like Redis) |
+| Session state                         | 🚫                   | ✅                                              |
+| Want Redis/SQL later                  | 🚫                   | ✅                                              |
+| Performance critical, single instance | ✅                    | 🚫                                             |
+
+---
+
+
