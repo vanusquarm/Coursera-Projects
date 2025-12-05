@@ -1,0 +1,30 @@
+trigger:
+  - master
+
+pr:
+  - master
+
+stages:
+- stage: BuildAndPublish
+  jobs:
+  - job: Job
+    pool:
+      name: windows-latest
+    steps:
+    - task: NuGetToolInstaller@1
+
+    - task: NuGetCommand@2
+      inputs:
+        restoreSolution: '**/*.sln'
+        feedsToUse: 'select'   # Or 'config' if using NuGet.config
+
+    - task: VSBuild@1
+      inputs:
+        solution: '**/*.sln'
+        vsVersion: 'latest'
+        configuration: 'Release'
+
+    - task: PublishBuildArtifacts@1
+      inputs:
+        artifactName: 'USSD.API'
+        publishLocation: 'Container'
