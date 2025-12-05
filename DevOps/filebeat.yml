@@ -1,0 +1,15 @@
+filebeat.inputs:
+- type: log
+  paths:
+  - '<add path to your files here>'
+
+output.elasticsearch:
+  hosts: ["<es_url>"]
+  username: "elastic"
+  password: "<password>"
+  index: "apicore-preprod"
+  pipeline: "apicore-preprod-pipeline"
+
+setup:
+  template.enabled: false
+  ilm.enabled: false
